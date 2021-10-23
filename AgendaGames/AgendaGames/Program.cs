@@ -34,6 +34,7 @@ namespace AgendaGames
                 Console.WriteLine("7 - Lista todos");
                 Console.WriteLine("8 - Sair");
                 var action = Console.ReadLine();
+                Console.WriteLine("");
                 if (!int.TryParse(action, out var n))
                 {
                     Console.WriteLine("Ação incorreta digitada");
@@ -261,10 +262,14 @@ namespace AgendaGames
                 Console.WriteLine("Digite a hora do jogo");
                 hour = Console.ReadLine();
 
-                if (!DateTime.TryParse(dateStr, out date))
-                    Console.WriteLine("Data informada não estava em um formato válido!");
 
-                allValid = new List<string> { name, category, link, hour }.FirstOrDefault(x => string.IsNullOrEmpty(x)) == null || date == DateTime.MinValue;
+                allValid = new List<string> { name, category, link, hour }.FirstOrDefault(x => string.IsNullOrEmpty(x)) == null;
+
+                if (!DateTime.TryParse(dateStr, out date))
+                {
+                    Console.WriteLine("Data informada não estava em um formato válido!");
+                    allValid = false;
+                }
 
                 if (!allValid)
                     Console.WriteLine("Informe todos os campos corretamente!");
