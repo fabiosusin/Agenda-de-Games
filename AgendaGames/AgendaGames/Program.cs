@@ -6,12 +6,13 @@ namespace AgendaGames
 {
     class Program
     {
+        public static HashTable Table = new HashTable(500);
         public static Node Ant;
         public static List<LetterIndex> Letters;
 
         static void Main()
         {
-
+            var key = 1;
             var header = new Node
             {
                 Next = null,
@@ -43,7 +44,7 @@ namespace AgendaGames
                 switch (n)
                 {
                     case 1:
-                        InsertGame(GetGame());
+                        InsertGame(key, GetGame());
                         break;
                     case 2:
                         Console.WriteLine("Nome do jogo a ser removido");
@@ -74,6 +75,15 @@ namespace AgendaGames
                         List(header, SortListType.Date);
                         break;
                     case 6:
+                        Console.WriteLine("Código do jogo a ser consultado");
+                        var code = Console.ReadLine();
+                        if (string.IsNullOrEmpty(code))
+                        {
+                            Console.WriteLine("Informe o código do jogo corretamente");
+                            continue;
+                        }
+
+                        PrintGameInfo(Table.GetValue(code));
                         break;
                     case 7:
                         ListAll(header);
@@ -82,12 +92,15 @@ namespace AgendaGames
                         stop = true;
                         break;
                 }
+
+                key++;
             }
             while (!stop);
         }
 
-        public static void InsertGame(Game game)
+        public static void InsertGame(int key, Game game)
         {
+            Table.Insert(key.ToString(), game);
             var node = new Node
             {
                 Data = game,
@@ -298,8 +311,73 @@ namespace AgendaGames
         public string Hour { get; set; }
     }
 
+    public class HashTable
+    {
+        private Node[] universe;
+        private readonly int tableSize;
+
+        public HashTable(int maxTableSize)
+        {
+            tableSize = maxTableSize;
+            universe = new Node[tableSize];
+        }
+
+        private int HashFuncation(string key)
+        {
+            int index = 7;
+            for (int i = 0; i < key.Length; i++)
+            {
+                var asciiVal = key[i] * i;
+                index = index * 31 + asciiVal;
+            }
+            return index % tableSize;
+        }
+
+        public void Insert(string key, Game value)
+        {
+            int genIndex = HashFuncation(key);
+            Node node = universe[genIndex];
+
+            if (node == null)
+            {
+                universe[genIndex] = new Node() { Key = key, Data = value };
+                return;
+            }
+
+            if (node.Key == key)
+                throw new Exception("Can't use same key!");
+
+            while (node.Next != null)
+            {
+                node = node.Next;
+                if (node.Key == key)
+                    throw new Exception("Can't use same key!");
+            }
+
+            Node newNode = new Node() { Key = key, Data = value, Prev = node, Next = null };
+            node.Next = newNode;
+        }
+
+        public Game GetValue(string key)
+        {
+            int genIndex = HashFuncation(key);
+            Node node = universe[genIndex];
+            while (node != null)
+            {
+                if (node.Key == key)
+                {
+                    return node.Data;
+                }
+                node = node.Next;
+            }
+
+            return null;
+        }
+    }
+
     public class Node
     {
+        public string Key { get; set; }
         public Game Data;
         public Node Next;
         public Node Prev;
